@@ -23,7 +23,7 @@ module.exports = function(grunt) {
     qunit: {
       files: ['test/**/*.html']
     },
-    
+
     clean: {
       src: ['dist/prismic.io.js','dist/prismic.io.min.js']
     },
@@ -34,7 +34,7 @@ module.exports = function(grunt) {
         dest: 'dist/prismic.io.js'
       }
     },
-    
+
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %> <%= VERSION %> <%= grunt.template.today("yyyy-mm-dd") %> */\n'

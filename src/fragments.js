@@ -41,7 +41,7 @@
         },
         /**
          * Returns the URL of the document link.
-         * 
+         *
          * @params {object} ctx - mandatory ctx object, with a useable linkResolver function (please read prismic.io online documentation about this)
          * @returns {string} - the proper URL to use
          */
@@ -68,10 +68,10 @@
         },
         /**
          * Returns the URL of the link.
-         * 
+         *
          * @returns {string} - the proper URL to use
          */
-        url: function() {
+        url: function () {
             return this.value.url;
         }
     };
@@ -94,10 +94,10 @@
         },
         /**
          * Returns the URL of the link.
-         * 
+         *
          * @returns {string} - the proper URL to use
          */
-        url: function() {
+        url: function () {
             return this.value.file.url;
         }
     };
@@ -120,10 +120,10 @@
         },
         /**
          * Returns the URL of the link.
-         * 
+         *
          * @returns {string} - the proper URL to use
          */
-        url: function() {
+        url: function () {
             return this.value.image.url;
         }
     };
@@ -237,7 +237,7 @@
          * @param {string} name - the name of the view to get
          * @returns {ImageView} - the proper view
          */
-        getView: function(name) {
+        getView: function (name) {
             if (name === "main") {
                 return this.main;
             } else {
@@ -251,7 +251,7 @@
          * @returns {string} - basic HTML code for the fragment
          */
         asHtml: function () {
-            return this.main.asHtml()
+            return this.main.asHtml();
         }
     };
 
@@ -276,7 +276,7 @@
         asHtml: function () {
             return "<img src=" + this.url + " width=" + this.width + " height=" + this.height + ">";
         }
-    }
+    };
 
     function Group(tag, blocks) {
         this.tag = tag;
@@ -297,13 +297,13 @@
         getTitle: function () {
             for(var i=0; i<this.blocks.length; i++) {
                 var block = this.blocks[i];
-                if(block.type.indexOf('heading') == 0) {
+                if(block.type.indexOf('heading') === 0) {
                     return block;
                 }
             }
         },
 
-        getFirstParagraph: function() {
+        getFirstParagraph: function () {
             for(var i=0; i<this.blocks.length; i++) {
                 var block = this.blocks[i];
                 if(block.type == 'paragraph') {
@@ -312,7 +312,7 @@
             }
         },
 
-        getParagraphs: function() {
+        getParagraphs: function () {
             var paragraphs = [];
             for(var i=0; i<this.blocks.length; i++) {
                 var block = this.blocks[i];
@@ -323,11 +323,11 @@
             return paragraphs;
         },
 
-        getParagraph: function(n) {
+        getParagraph: function (n) {
             return this.getParagraphs()[n];
         },
 
-        getFirstImage: function() {
+        getFirstImage: function () {
             for(var i=0; i<this.blocks.length; i++) {
                 var block = this.blocks[i];
                 if(block.type == 'image') {
@@ -346,7 +346,7 @@
          *
          * @returns {string} - basic HTML code for the fragment
          */
-        asHtml: function(ctx) {
+        asHtml: function (ctx) {
             return StructuredTextAsHtml.call(this, this.blocks, ctx);
         }
 
@@ -381,7 +381,7 @@
                 // else: it's the same type as before, no touching group
 
                 group.blocks.push(block);
-            };
+            }
 
             groups.forEach(function (group) {
 
@@ -401,14 +401,14 @@
                     html.push('<p><img src="' + group.blocks[0].url + '"></p>');
                 }
                 else if(group.tag == "embed") {
-                    html.push('<div data-oembed="'+ group.blocks[0].embed_url
-                        + '" data-oembed-type="'+ group.blocks[0].type
-                        + '" data-oembed-provider="'+ group.blocks[0].provider_name
-                        + '">' + group.blocks[0].oembed.html+"</div>")
+                    html.push('<div data-oembed="'+ group.blocks[0].embed_url +
+                        '" data-oembed-type="'+ group.blocks[0].type +
+                        '" data-oembed-provider="'+ group.blocks[0].provider_name +
+                        '">' + group.blocks[0].oembed.html+"</div>");
                 }
                 else if(group.tag == "list-item" || group.tag == "o-list-item") {
                     html.push(group.tag == "list-item"?'<ul>':"<ol>");
-                    group.blocks.forEach(function(block){
+                    group.blocks.forEach(function (block) {
                         html.push("<li>"+insertSpans(block.text, block.spans, ctx)+"</li>");
                     });
                     html.push(group.tag == "list-item"?'</ul>':"</ol>");
@@ -437,7 +437,7 @@
         var html = [];
 
         /* checking the spans are following each other, or else not doing anything */
-        spans.forEach(function(span){
+        spans.forEach(function (span) {
             if (span.end < span.start) return text;
             if (span.start < cursor) return text;
             cursor = span.end;
@@ -445,7 +445,7 @@
 
         cursor = 0;
 
-        spans.forEach(function(span){
+        spans.forEach(function (span) {
             textBits.push(text.substring(0, span.start-cursor));
             text = text.substring(span.start-cursor);
             cursor = span.start;
@@ -456,9 +456,9 @@
         });
         textBits.push(text);
 
-        tags.forEach(function(tag, index){
+        tags.forEach(function (tag, index) {
             html.push(textBits.shift());
-            if(tag.type == "hyperlink"){
+            if(tag.type == "hyperlink") {
                 // Since the content of tag.data is similar to a link fragment, we can initialize it just like a fragment.
                 html.push('<a href="'+ initField(tag.data).url(ctx) +'">');
                 html.push(textBits.shift());
@@ -512,7 +512,7 @@
                 break;
 
             case "Image":
-                var img = field.value.main;
+                img = field.value.main;
                 output = new ImageEl(
                     new ImageView(
                         img.url,
@@ -522,7 +522,7 @@
                     {}
                 );
                 for (var name in field.value.views) {
-                    var img = field.value.views[name];
+                    img = field.value.views[name];
                     output.views[name] = new ImageView(
                         img.url,
                         img.dimensions.width,
@@ -574,6 +574,6 @@
         ImageLink: ImageLink,
         FileLink: FileLink,
         initField: initField
-    }
+    };
 
 }(typeof exports === 'object' && exports ? exports : (typeof module === "object" && module && typeof module.exports === "object" ? module.exports : window)));

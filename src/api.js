@@ -11,34 +11,34 @@
      * @param {function} maybeRequestHandler - The kit knows how to handle the HTTP request in Node.js and in the browser (with Ajax); you will need to pass a maybeRequestHandler if you're in another JS environment
      * @returns {Api} - The Api object that can be manipulated
      */
-    var prismic = function(url, callback, accessToken, maybeRequestHandler) {
+    var prismic = function (url, callback, accessToken, maybeRequestHandler) {
         var api = new prismic.fn.init(url, accessToken, maybeRequestHandler);
-        callback && api.get(callback);
+        if(callback) { api.get(callback); }
         return api;
     };
 
     // -- Request handlers
 
-    var ajaxRequest = (function() {
+    var ajaxRequest = (function () {
         if(typeof XMLHttpRequest != 'undefined') {
-            return function(url, callback) {
+            return function (url, callback) {
 
                 var xhr = new XMLHttpRequest();
 
                 // Called on success
-                var resolve = function() {
+                var resolve = function () {
                     callback(null, JSON.parse(xhr.responseText));
-                }
+                };
 
                 // Called on error
-                var reject = function() {
+                var reject = function () {
                     var status = xhr.status;
                     callback(new Error("Unexpected status code [" + status + "] on URL "+url));
-                }
+                };
 
                 // Bind the XHR finished callback
                 xhr.onreadystatechange = function () {
-                    if (xhr.readyState === 4) {
+                    if(xhr.readyState === 4) {
                         if(xhr.status && xhr.status == 200) {
                             resolve(xhr);
                         } else {
@@ -55,11 +55,11 @@
 
                 // Send the XHR
                 xhr.send();
-            }
+            };
         }
     });
 
-    var nodeJSRequest = (function() {
+    var nodeJSRequest = (function () {
         if(typeof require == 'function' && require('http')) {
             var requestsCache = {},
                 http = require('http'),
@@ -67,7 +67,7 @@
                 url = require('url'),
                 querystring = require('querystring');
 
-            return function(requestUrl, callback) {
+            return function (requestUrl, callback) {
                 if(requestsCache[requestUrl]) {
                     callback(null, requestsCache[requestUrl]);
                 } else {
@@ -81,7 +81,7 @@
                             headers: { 'Accept': 'application/json' }
                         };
 
-                    h.get(options, function(response) {
+                    h.get(options, function (response) {
                         if(response.statusCode && response.statusCode == 200) {
                             var jsonStr = '';
 
@@ -129,11 +129,11 @@
          * @param {function} callback - Optional callback function that is called after the query is made, to which you may pass two parameters: a potential error (null if no problem), and the API object
          * @returns {Api} - The Api object that can be manipulated
          */
-        get: function(callback) {
+        get: function (callback) {
             var self = this;
 
-            this.requestHandler(this.url, function(error, data) {
-                if (error) {
+            this.requestHandler(this.url, function (error, data) {
+                if(error) {
                     callback(error);
                 } else {
                     self.data = self.parse(data);
@@ -151,7 +151,7 @@
          * @param {string} data - The JSON document responded on the API's endpoint
          * @returns {Api} - The Api object that can be manipulated
          */
-        parse: function(data) {
+        parse: function (data) {
             var refs,
                 master,
                 forms = {},
@@ -163,11 +163,11 @@
 
             // Parse the forms
             for (i in data.forms) {
-                if (data.forms.hasOwnProperty(i)) {
+                if(data.forms.hasOwnProperty(i)) {
                     f = data.forms[i];
 
                     if(this.accessToken) {
-                        f.fields['accessToken'] = {
+                        f.fields.accessToken = {
                             type: 'string',
                             default: this.accessToken
                         };
@@ -202,7 +202,7 @@
 
             tags = data.tags;
 
-            if (master.length === 0) {
+            if(master.length === 0) {
                 throw ("No master ref.");
             }
 
@@ -213,8 +213,8 @@
                 master: master[0],
                 types: types,
                 tags: tags,
-                oauthInitiate: data['oauth_initiate'],
-                oauthToken: data['oauth_token']
+                oauthInitiate: data.oauth_initiate,
+                oauthToken: data.oauth_token
             };
 
         },
@@ -223,10 +223,12 @@
          * Initialisation of the API object.
          * This is for internal use, from outside this kit, you should call Prismic.Api()
          */
-        init: function(url, accessToken, maybeRequestHandler) {
+        init: function (url, accessToken, maybeRequestHandler) {
             this.url = url + (accessToken ? (url.indexOf('?') > -1 ? '&' : '?') + 'access_token=' + accessToken : '');
             this.accessToken = accessToken;
-            this.requestHandler = maybeRequestHandler || ajaxRequest() || nodeJSRequest() || (function() {throw new Error("No request handler available (tried XMLHttpRequest & NodeJS)")})();
+            this.requestHandler = maybeRequestHandler || ajaxRequest() || nodeJSRequest() || (function () {
+                throw new Error("No request handler available (tried XMLHttpRequest & NodeJS)");
+            })();
             return this;
         },
 
@@ -234,7 +236,7 @@
          * @deprecated use form() now
          * Returns a useable form from its id, as described in the RESTful description of the API.
          */
-        forms: function(formId) {
+        forms: function (formId) {
             return this.form(formId);
         },
 
@@ -245,7 +247,7 @@
          *
          * @returns {SearchForm} - the SearchForm that can be used.
          */
-        form: function(formId) {
+        form: function (formId) {
             var form = this.data.forms[formId];
             if(form) {
                 return new SearchForm(this, form, {});
@@ -259,7 +261,7 @@
          *
          * @returns {string}
          */
-        master: function() {
+        master: function () {
             return this.data.master.ref;
         },
 
@@ -270,7 +272,7 @@
          *
          * @returns {string}
          */
-        ref: function(label) {
+        ref: function (label) {
             for(var i=0; i<this.data.refs.length; i++) {
                 if(this.data.refs[i].label == label) {
                     return this.data.refs[i].ref;
@@ -310,7 +312,7 @@
                 this.data[field] = [form.fields[field].default];
             }
         }
-    };
+    }
 
     SearchForm.prototype = {
 
@@ -324,7 +326,7 @@
          * @param {string} value - The value that gets assigned
          * @returns {SearchForm} - The SearchForm itself
          */
-        set: function(field, value) {
+        set: function (field, value) {
             var fieldDesc = this.form.fields[field];
             if(!fieldDesc) throw new Error("Unknown field " + field);
             var values= this.data[field] || [];
@@ -332,10 +334,12 @@
                 // we must compare value to null because we want to allow 0
                 value = null;
             }
-            if(fieldDesc.multiple) {
-                value != null && values.push(value);
-            } else {
-                values = value != null && [value];
+            if(value !== null) {
+                if(fieldDesc.multiple) {
+                    values.push(value);
+                } else {
+                    values = [value];
+                }
             }
             this.data[field] = values;
             return this;
@@ -349,7 +353,7 @@
          * @param {Ref} ref - The Ref object defining the ref to query
          * @returns {SearchForm} - The SearchForm itself
          */
-        ref: function(ref) {
+        ref: function (ref) {
             return this.set("ref", ref);
         },
 
@@ -361,7 +365,7 @@
          * @param {string} query - The query to perform
          * @returns {SearchForm} - The SearchForm itself
          */
-        query: function(query) {
+        query: function (query) {
             return this.set("q", query);
         },
 
@@ -372,7 +376,7 @@
          * to which you may pass two parameters: a potential error (null if no problem),
          * and a Documents object (containing all the pagination specifics + the array of Docs)
          */
-        submit: function(callback) {
+        submit: function (callback) {
             var self = this,
                 url = this.form.action;
 
@@ -391,13 +395,13 @@
 
             this.api.requestHandler(url, function (err, documents) {
 
-                if (err) { callback(err); return; }
+                if(err) { callback(err); return; }
 
                 var results = documents.results.map(function (doc) {
-                    var fragments = {}
+                    var fragments = {};
 
                     for(var field in doc.data[doc.type]) {
-                        fragments[doc.type + '.' + field] = doc.data[doc.type][field]
+                        fragments[doc.type + '.' + field] = doc.data[doc.type][field];
                     }
 
                     return new Doc(
@@ -407,7 +411,7 @@
                         doc.tags,
                         doc.slugs,
                         fragments
-                    )
+                    );
                 });
 
                 callback(null, new Documents(
@@ -430,18 +434,18 @@
      * An array of the fragments with the given fragment name.
      * The array is often a single-element array, expect when the field is a multiple field.
      */
-    function getFragments(name) {
-        if (!this.fragments || !this.fragments[name]) {
+    function getFragments(doc, name) {
+        if(!doc.fragments || !doc.fragments[name]) {
             return [];
         }
 
-        if (Array.isArray(this.fragments[name])) {
-            return this.fragments[name];
+        if(Array.isArray(doc.fragments[name])) {
+            return doc.fragments[name];
         } else {
-            return [this.fragments[name]];
+            return [doc.fragments[name]];
         }
 
-    };
+    }
 
     /**
      * Embodies the result of a SearchForm query as returned by the API.
@@ -483,8 +487,8 @@
          * @param {string} name - The name of the field to get, with its type; for instance, "blog-post.author"
          * @returns {object} - The JavaScript Fragment object to manipulate
          */
-        get: function(name) {
-            var frags = getFragments.call(this, name);
+        get: function (name) {
+            var frags = getFragments(this, name);
             return frags.length ? Global.Prismic.Fragments.initField(frags[0]) : null;
         },
 
@@ -494,8 +498,8 @@
          * @param {string} name - The name of the multiple fragment to get, with its type; for instance, "blog-post.author"
          * @returns {array} - An array of each JavaScript fragment object to manipulate.
          */
-        getAll: function(name) {
-            return getFragments.call(this, name).map(function (fragment) {
+        getAll: function (name) {
+            return getFragments(this, name).map(function (fragment) {
                 return Global.Prismic.Fragments.initField(fragment);
             }, this);
         },
@@ -507,26 +511,26 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "blog-post.photo"
          * @returns {Image} - The Image object to manipulate
          */
-        getImage: function(field) {
+        getImage: function (field) {
             var img = this.get(field);
-            if (img instanceof Global.Prismic.Fragments.Image) {
+            if(img instanceof Global.Prismic.Fragments.Image) {
                 return img;
             }
-            if (img instanceof Global.Prismic.Fragments.StructuredText) {
+            if(img instanceof Global.Prismic.Fragments.StructuredText) {
                 // find first image in st.
-                return img
+                return img;
             }
             return null;
         },
 
-        getAllImages: function(field) {
+        getAllImages: function (field) {
             var images = this.getAll(field);
 
             return images.map(function (image) {
-                if (image instanceof Global.Prismic.Fragments.Image) {
+                if(image instanceof Global.Prismic.Fragments.Image) {
                     return image;
                 }
-                if (image instanceof Global.Prismic.Fragments.StructuredText) {
+                if(image instanceof Global.Prismic.Fragments.StructuredText) {
                     throw new Error("Not done.");
                 }
                 return null;
@@ -541,12 +545,12 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "blog-post.photo"
          * @returns {ImageView} - The View object to manipulate
          */
-        getImageView: function(field, view) {
+        getImageView: function (field, view) {
             var fragment = this.get(field);
-            if (fragment instanceof Global.Prismic.Fragments.Image) {
+            if(fragment instanceof Global.Prismic.Fragments.Image) {
                 return fragment.getView(view);
             }
-            if (fragment instanceof Global.Prismic.Fragments.StructuredText) {
+            if(fragment instanceof Global.Prismic.Fragments.StructuredText) {
                 for(var i=0; i<fragment.blocks.length; i++) {
                     if(fragment.blocks[i].type == 'image') {
                         return fragment.blocks[i];
@@ -556,7 +560,7 @@
             return null;
         },
 
-        getAllImageViews: function(field, view) {
+        getAllImageViews: function (field, view) {
             return this.getAllImages(field).map(function (image) {
                 return image.getView(view);
             });
@@ -569,7 +573,7 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "blog-post.publicationdate"
          * @returns {Date} - The Date object to manipulate
          */
-        getDate: function(field) {
+        getDate: function (field) {
             var fragment = this.get(field);
 
             if(fragment instanceof Global.Prismic.Fragments.Date) {
@@ -585,7 +589,7 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "blog-post.enableComments"
          * @returns {boolean}
          */
-        getBoolean: function(field) {
+        getBoolean: function (field) {
             var fragment = this.get(field);
             return fragment.value && (fragment.value.toLowerCase() == 'yes' || fragment.value.toLowerCase() == 'on' || fragment.value.toLowerCase() == 'true');
         },
@@ -598,36 +602,36 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "blog-post.label"
          * @returns {object} - either StructuredText, or Text, or Number, or Select, or Color.
          */
-        getText: function(field, after) {
+        getText: function (field, after) {
             var fragment = this.get(field);
 
-            if (fragment instanceof Global.Prismic.Fragments.StructuredText) {
-                return fragment.blocks.map(function(block) {
+            if(fragment instanceof Global.Prismic.Fragments.StructuredText) {
+                return fragment.blocks.map(function (block) {
                     if(block.text) {
                         return block.text + (after ? after : '');
                     }
                 }).join('\n');
             }
 
-            if (fragment instanceof Global.Prismic.Fragments.Text) {
+            if(fragment instanceof Global.Prismic.Fragments.Text) {
                 if(fragment.value) {
                     return fragment.value + (after ? after : '');
                 }
             }
 
-            if (fragment instanceof Global.Prismic.Fragments.Number) {
+            if(fragment instanceof Global.Prismic.Fragments.Number) {
                 if(fragment.value) {
                     return fragment.value + (after ? after : '');
                 }
             }
 
-            if (fragment instanceof Global.Prismic.Fragments.Select) {
+            if(fragment instanceof Global.Prismic.Fragments.Select) {
                 if(fragment.value) {
                     return fragment.value + (after ? after : '');
                 }
             }
 
-            if (fragment instanceof Global.Prismic.Fragments.Color) {
+            if(fragment instanceof Global.Prismic.Fragments.Color) {
                 if(fragment.value) {
                     return fragment.value + (after ? after : '');
                 }
@@ -641,10 +645,10 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "blog-post.body"
          * @returns {StructuredText} - The StructuredText field to manipulate.
          */
-        getStructuredText: function(field) {
+        getStructuredText: function (field) {
             var fragment = this.get(field);
 
-            if (fragment instanceof Global.Prismic.Fragments.StructuredText) {
+            if(fragment instanceof Global.Prismic.Fragments.StructuredText) {
                 return fragment;
             }
         },
@@ -656,11 +660,11 @@
          * @param {string} field - The name of the field to get, with its type; for instance, "product.price"
          * @returns {Number} - The Number field to manipulate.
          */
-        getNumber: function(field) {
+        getNumber: function (field) {
             var fragment = this.get(field);
 
-            if (fragment instanceof Global.Prismic.Fragments.Number) {
-                return fragment.value
+            if(fragment instanceof Global.Prismic.Fragments.Number) {
+                return fragment.value;
             }
         },
 
@@ -672,7 +676,7 @@
          * @param {function} ctx - The ctx object that contains the context: ctx.api, ctx.ref, ctx.maybeRef, ctx.oauth(), et ctx.linkResolver()
          * @returns {string} - The HTML output
          */
-        getHtml: function(field, ctx) {
+        getHtml: function (field, ctx) {
             var fragment = this.get(field);
 
             if(fragment && fragment.asHtml) {
@@ -687,13 +691,13 @@
          * @param {object} ctx - The ctx object that contains the context: ctx.api, ctx.ref, ctx.maybeRef, ctx.oauth(), et ctx.linkResolver()
          * @returns {string} - The HTML output
          */
-        asHtml: function(ctx) {
+        asHtml: function (ctx) {
             var htmls = [];
             for(var field in this.fragments) {
-                var fragment = this.get(field)
-                htmls.push(fragment && fragment.asHtml ? '<section data-field="' + field + '">' + fragment.asHtml(ctx) + '</section>' : '')
+                var fragment = this.get(field);
+                htmls.push(fragment && fragment.asHtml ? '<section data-field="' + field + '">' + fragment.asHtml(ctx) + '</section>' : '');
             }
-            return htmls.join('')
+            return htmls.join('');
         }
 
     };
@@ -712,6 +716,6 @@
 
     Global.Prismic = {
         Api: prismic
-    }
+    };
 
 }(typeof exports === 'object' && exports ? exports : (typeof module === "object" && module && typeof module.exports === "object" ? module.exports : window)));
