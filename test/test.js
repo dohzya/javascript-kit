@@ -273,16 +273,13 @@
       ref: { ref: 'XXXXX', label: 'Future release', isMaster: false },
       maybeRef: 'XXXXX',
       oauth: function() { },
-      linkResolver: function(ctx, doc, isBroken) {
-        if (isBroken) return '#broken';
-        return "/testing_url/"+doc.id+"/"+doc.slug+( ctx.maybeRef ? '?ref=' + ctx.maybeRef : '' );
-      }
+      linkResolver: function(ctx, doc, isBroken) { return 'url'; }
     };
     Prismic.Api('https://micro.prismic.io/api', function(err, Api) {
       if (err) { console.log(err); return; }
       Api.form('everything').query('[[:d = at(document.id, "UrDejAEAAFwMyrW9")]]').ref(Api.master()).submit(function(err, documents) {
         if (err) { console.log(err); return; }
-        equal(documents.results[0].getStructuredText('doc.content').asHtml(ctx), '<p>Meta-micro gets installed pretty much like any javascript library:</p><ol><li><a href=\"/testing_url/Uqp2hAEAALk9kmkR/download-meta-micro?ref=XXXXX\">download</a> the .js file: get the minified one, unless the framework you\'re using minifies your .js files automatically.</li><li>add a link towards the file in your webpage\'s head.</li></ol><p>The link might look like this, anywhere inside your head tag:</p><pre><script type=\"text/javascript\" src=\"meta-micro.min.js\"></script></pre><p>You\'re all set!</p>');
+        equal(documents.results[0].getStructuredText('doc.content').asHtml(ctx), '<p>Meta-micro gets installed pretty much like any javascript library:</p><ol><li><a href=\"url\">download</a> the .js file: get the minified one, unless the framework you\'re using minifies your .js files automatically.</li><li>add a link towards the file in your webpage\'s head.</li></ol><p>The link might look like this, anywhere inside your head tag:</p><pre><script type=\"text/javascript\" src=\"meta-micro.min.js\"></script></pre><p>You\'re all set!</p>');
         start();
       });
     }, previewToken);
